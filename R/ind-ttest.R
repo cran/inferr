@@ -50,17 +50,21 @@
 #' Statistical Procedures, 4th edition. : Chapman & Hall/CRC.
 #' @seealso \code{\link[stats]{t.test}}
 #' @examples
+#' # data
+#' hsb2 <- inferr::hsb
+#' hsb2$female <- as.factor(hsb2$female)
+#'
 #' # lower tail
-#' ind_ttest(hsb, 'female', 'write', alternative = 'less')
+#' ind_ttest(hsb2, 'female', 'write', alternative = 'less')
 #'
 #' # upper tail
-#' ind_ttest(hsb, 'female', 'write', alternative = 'greater')
+#' ind_ttest(hsb2, 'female', 'write', alternative = 'greater')
 #'
 #' # both tails
-#' ind_ttest(hsb, 'female', 'write', alternative = 'both')
+#' ind_ttest(hsb2, 'female', 'write', alternative = 'both')
 #'
 #' # all tails
-#' ind_ttest(hsb, 'female', 'write', alternative = 'all')
+#' ind_ttest(hsb2, 'female', 'write', alternative = 'all')
 #' @export
 #'
 ind_ttest <- function(data, x, y, confint = 0.95,
@@ -72,15 +76,23 @@ ind_ttest.default <- function(data, x, y, confint = 0.95,
   alternative = c('both', 'less', 'greater', 'all'), ...) {
 
     if (!is.data.frame(data)) {
-      stop('data must be a data frame')
+      stop('data must be a data frame', call. = FALSE)
     }
 
     if (!x %in% colnames(data)) {
-      stop('x must be a column in data')
+      stop('x must be a column in data', call. = FALSE)
     }
 
     if (!y %in% colnames(data)) {
-      stop('y must be a column in data')
+      stop('y must be a column in data', call. = FALSE)
+    }
+
+    if (check_x(data, x)) {
+      stop('x must be a binary factor variable', call. = FALSE)
+    }
+
+    if (check_level(data, x) > 2) {
+      stop('x must be a binary factor variable', call. = FALSE)
     }
 
     method <- match.arg(alternative)

@@ -13,7 +13,9 @@ paired_ttest(hsb$read, hsb$write, alternative = 'less')
 paired_ttest(hsb$read, hsb$write, alternative = 'all')
 
 ## ----ind-----------------------------------------------------------------
-ind_ttest(hsb, 'female', 'write', alternative = 'all')
+hsb2 <- inferr::hsb
+hsb2$female <- as.factor(hsb2$female)
+ind_ttest(hsb2, 'female', 'write', alternative = 'all')
 
 ## ----os_prop1------------------------------------------------------------
 # Using Variables

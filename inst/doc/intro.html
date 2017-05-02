@@ -11,7 +11,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2017-02-14" />
+<meta name="date" content="2017-05-02" />
 
 <title>Introduction to inferr</title>
 
@@ -68,7 +68,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <h1 class="title toc-ignore">Introduction to inferr</h1>
-<h4 class="date"><em>2017-02-14</em></h4>
+<h4 class="date"><em>2017-05-02</em></h4>
 
 
 
@@ -189,12 +189,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="example-1" class="section level3">
 <h3>Example</h3>
 <p>Using the hsb data, test whether the mean for write is the same for males and females.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ind_ttest</span>(hsb, <span class="st">'female'</span>, <span class="st">'write'</span>, <span class="dt">alternative =</span> <span class="st">'all'</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hsb2 &lt;-<span class="st"> </span>inferr::hsb
+hsb2$female &lt;-<span class="st"> </span><span class="kw">as.factor</span>(hsb2$female)
+<span class="kw">ind_ttest</span>(hsb2, <span class="st">'female'</span>, <span class="st">'write'</span>, <span class="dt">alternative =</span> <span class="st">'all'</span>)</code></pre></div>
 <pre><code>##                               Group Statistics                                
 ## -----------------------------------------------------------------------------
 ##   Group       Obs     Mean     Std. Err.    Std. Dev.    [95% Conf. Interval] 
 ## -----------------------------------------------------------------------------
-##     0         91     50.121      1.08        10.305        47.975     52.267   
+##     0          91    50.121      1.080       10.305        47.975     52.267   
 ##     1         109    54.991      0.779        8.134        53.447     56.535   
 ## -----------------------------------------------------------------------------
 ##  combined     200    52.775      0.67         9.479        51.454     54.096   
@@ -616,6 +618,7 @@ race &lt;-<span class="st"> </span><span class="kw">as.factor</span>(hsb$race)
 ##                              Test Statistics                              
 ## -------------------------------------------------------------------------
 ## Statistic                            Num DF    Den DF         F    Pr &gt; F 
+## -------------------------------------------------------------------------
 ## Brown and Forsythe                        3       196      3.44    0.0179 
 ## Levene                                    3       196    3.4792     0.017 
 ## Brown and Forsythe (Trimmed Mean)         3       196    3.3936     0.019 
@@ -639,6 +642,7 @@ race &lt;-<span class="st"> </span><span class="kw">as.factor</span>(hsb$race)
 ##                              Test Statistics                              
 ## -------------------------------------------------------------------------
 ## Statistic                            Num DF    Den DF         F    Pr &gt; F 
+## -------------------------------------------------------------------------
 ## Brown and Forsythe                        2       597    1.1683    0.3116 
 ## Levene                                    2       597    1.3803    0.2523 
 ## Brown and Forsythe (Trimmed Mean)         2       597    1.3258    0.2664 
@@ -662,6 +666,7 @@ m &lt;-<span class="st"> </span><span class="kw">lm</span>(read ~<span class="st
 ##                              Test Statistics                              
 ## -------------------------------------------------------------------------
 ## Statistic                            Num DF    Den DF         F    Pr &gt; F 
+## -------------------------------------------------------------------------
 ## Brown and Forsythe                        1       198    0.4542    0.5011 
 ## Levene                                    1       198    0.6024    0.4386 
 ## Brown and Forsythe (Trimmed Mean)         1       198     0.494     0.483 
@@ -684,6 +689,7 @@ m &lt;-<span class="st"> </span><span class="kw">lm</span>(read ~<span class="st
 ##                              Test Statistics                              
 ## -------------------------------------------------------------------------
 ## Statistic                            Num DF    Den DF         F    Pr &gt; F 
+## -------------------------------------------------------------------------
 ## Brown and Forsythe                        1       198    0.5643    0.4534 
 ## Levene                                    1       198    0.6153    0.4337 
 ## Brown and Forsythe (Trimmed Mean)         1       198    0.5886    0.4439 
