@@ -22,6 +22,10 @@ test_that('output from text formatting matches the expected result', {
   expect_equivalent(fs(),  "  ")
   expect_equivalent(fl(3, 10),  "3         ")
   expect_equivalent(fc(3, 10),  "    3     ")
+  expect_equivalent(fk(3, 10), "     3.000")
+  expect_equivalent(fw(3, 10), "    3     ")
+  expect_equivalent(fn(3, 10), "    3     ")
+  expect_equivalent(formats(), "    ")
   expect_equivalent(formatter_t(3, 10),  "    3     ")
   expect_equivalent(format_cil(3, 10),  "    3     ")
   expect_equivalent(format_ciu(3, 10),  "    3     ")
@@ -51,7 +55,7 @@ test_that('output from lev_metric matches the expected result', {
 })
 
 test_that('output from serr matches the expected result', {
-  k <- mcnemar_test(matrix(c(135, 18, 21, 26), nrow = 2))
+  k <- infer_mcnemar_test(matrix(c(135, 18, 21, 26), nrow = 2))
 	expected <- sum(rowSums(k$tbl) * colSums(k$tbl)) / (sum(k$tbl) ^ 2)
   expect_equal(round(serr(k$tbl, k$kappa, expected), 3), 0.075)
 })
@@ -141,7 +145,3 @@ test_that('output from sums and coch matches the expected result', {
     expect_equal(round(q, 3), 1.385)
 })
 
-
-test_that('output from sdruns and expruns match the expected result', {
-
-})
