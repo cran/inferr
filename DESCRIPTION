@@ -1,7 +1,7 @@
 Package: inferr
 Type: Package
 Title: Inferential Statistics
-Version: 0.2.0
+Version: 0.3.0
 Authors@R: person("Aravind", "Hebbali", email = "hebbali.aravind@gmail.com", role = c("aut", "cre"))
 Description: Select set of parametric and non-parametric statistical tests. 'inferr' builds upon the solid set of
     statistical tests provided in 'stats' package by including additional data types as inputs, expanding and
@@ -11,17 +11,18 @@ License: MIT + file LICENSE
 URL: https://rsquaredacademy.github.io/inferr/,
         https://github.com/rsquaredacademy/inferr
 BugReports: https://github.com/rsquaredacademy/inferr/issues
-Imports: dplyr, magrittr, purrr, Rcpp, shiny, tibble, tidyr
-Suggests: covr, jsonlite, knitr, lubridate, readr, readxl, rmarkdown,
-        scales, shinyBS, shinythemes, stringr, testthat, tools
+Imports: dplyr, magrittr, purrr, Rcpp, rlang, shiny, tibble, tidyr
+Suggests: covr, descriptr, haven, jsonlite, knitr, lubridate, readr,
+        readxl, rmarkdown, scales, shinyBS, shinythemes, stringr,
+        testthat, tools
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr
 RoxygenNote: 6.0.1
 LinkingTo: Rcpp
 NeedsCompilation: yes
-Packaged: 2017-12-11 15:48:45 UTC; HP
+Packaged: 2018-02-13 11:01:11 UTC; HP
 Author: Aravind Hebbali [aut, cre]
 Maintainer: Aravind Hebbali <hebbali.aravind@gmail.com>
 Repository: CRAN
-Date/Publication: 2017-12-11 17:34:29 UTC
+Date/Publication: 2018-02-13 11:12:37 UTC

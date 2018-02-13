@@ -1,7 +1,8 @@
 #' @title Chi Square Goodness of Fit Test
 #' @description Test whether the observed proportions for a categorical variable
 #' differ from hypothesized proportions
-#' @param x categorical variable
+#' @param data a \code{data.frame} or \code{tibble}
+#' @param x factor; column in \code{data}
 #' @param y expected proportions
 #' @param correct logical; if TRUE continuity correction is applied
 #' @return \code{infer_chisq_gof_test} returns an object of class
@@ -27,59 +28,80 @@
 #' @references Sheskin, D. J. 2007. Handbook of Parametric and Nonparametric
 #' Statistical Procedures, 4th edition. : Chapman & Hall/CRC.
 #' @examples
-#' infer_chisq_gof_test(as.factor(hsb$race), c(20, 20, 20, 140))
+#' infer_chisq_gof_test(hsb, race, c(20, 20, 20, 140))
 #'
 #' # apply continuity correction
-#' infer_chisq_gof_test(as.factor(hsb$race), c(20, 20, 20, 140), correct = TRUE)
+#' infer_chisq_gof_test(hsb, race, c(20, 20, 20, 140), correct = TRUE)
 #' @export
 #'
-infer_chisq_gof_test <- function(x, y, correct = FALSE) UseMethod('infer_chisq_gof_test')
+infer_chisq_gof_test <- function(data, x, y, correct = FALSE) UseMethod("infer_chisq_gof_test")
 
 #' @export
-infer_chisq_gof_test.default <- function(x, y, correct = FALSE) {
+infer_chisq_gof_test.default <- function(data, x, y, correct = FALSE) {
+  x1 <- enquo(x)
 
-	if (!is.factor(x)) {
-		stop('x must be an object of class factor')
-	}
+  xcheck <-
+    data %>%
+    pull(!! x1)
 
-	if (!is.numeric(y)) {
-		stop('y must be numeric')
-	}
+  xlen <-
+    data %>%
+    pull(!! x1) %>%
+    length()
 
-	if (!is.logical(correct)) {
-		stop('correct must be either TRUE or FALSE')
-	}
+  xone <-
+    data %>%
+    pull(!! x1) %>%
+    table() %>%
+    as.vector()
 
-		 x1 <- x
-	varname <- l(deparse(substitute(x)))
-          x <- as.vector(table(x))
-          n <- length(x)
+  if (!is.factor(xcheck)) {
+    stop("x must be an object of class factor")
+  }
 
-	if (length(y) != n) {
-		stop('Length of y must be equal to the number of categories in x')
-	}
+  if (!is.numeric(y)) {
+    stop("y must be numeric")
+  }
 
-    df <- n - 1
+  if (!is.logical(correct)) {
+    stop("correct must be either TRUE or FALSE")
+  }
 
-    if (sum(y) == 1) {
-        y <- length(x1) * y
-    }
 
-    if ((df == 1) || (correct == TRUE)) {
-        k <- chi_cort(x, y)
-    } else {
-        k <- chigof(x, y)
-    }
+  varname <-
+    data %>%
+    select(!! x1) %>%
+    names()
 
-	sig <- round(pchisq(k$chi, df, lower.tail = FALSE), 4)
+  n <- length(xone)
 
-	result <- list(chisquare = k$chi, pvalue = sig, df = df, ssize = length(x1),
-    	    names = levels(x1), level = nlevels(x1), obs = x, exp = y,
-    	deviation = format(k$dev, nsmall = 2), std = format(k$std, nsmall = 2),
-    	  varname = varname)
+  if (length(y) != n) {
+    stop("Length of y must be equal to the number of categories in x")
+  }
 
-    class(result) <- 'infer_chisq_gof_test'
-    return(result)
+  df <- n - 1
+
+  if (sum(y) == 1) {
+    y <- xlen * y
+  }
+
+  if ((df == 1) || (correct == TRUE)) {
+    k <- chi_cort(xone, y)
+  } else {
+    k <- chigof(xone, y)
+  }
+
+  sig <- round(pchisq(k$chi, df, lower.tail = FALSE), 4)
+
+  result <- list(
+    chisquare = k$chi, pvalue = sig, df = df, ssize = length(xcheck),
+    names = levels(xcheck), level = nlevels(xcheck), obs = xone, exp = y,
+    deviation = format(k$dev, nsmall = 2), std = format(k$std, nsmall = 2),
+    varname = varname
+  )
+
+  class(result) <- "infer_chisq_gof_test"
+  return(result)
 }
 
 #' @export
@@ -87,13 +109,10 @@ infer_chisq_gof_test.default <- function(x, y, correct = FALSE) {
 #' @usage NULL
 #'
 chisq_gof <- function(x, y, correct = FALSE) {
-
-    .Deprecated("infer_chisq_gof_test()")
-    infer_chisq_gof_test(x, y, correct = FALSE)
-
+  .Deprecated("infer_chisq_gof_test()")
 }
 
 #' @export
 print.infer_chisq_gof_test <- function(x, ...) {
-	print_chisq_gof(x)
+  print_chisq_gof(x)
 }

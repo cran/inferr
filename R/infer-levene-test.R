@@ -1,5 +1,6 @@
 #' @importFrom stats anova model.frame formula
 #' @importFrom purrr map_int
+#' @importFrom rlang quo_is_null
 #' @title Levene's test for equality of variances
 #' @description  \code{infer_levene_test} reports Levene's robust test statistic
 #' for the equality of variances and the
@@ -7,11 +8,10 @@
 #' Levene's formula with alternative location estimators. The first alternative
 #' replaces the mean with the median. The second alternative replaces
 #' the mean with the 10% trimmed mean.
-#' @param variable a numeric vector or formula or object of class \code{lm}
-#' @param group_var a grouping variable
-#' @param trim.mean trimmed mean
-#' @param data a data frame
-#' @param ... numeric vectors
+#' @param data a \code{data.frame} or \code{tibble}
+#' @param ... numeric; columns in \code{data}
+#' @param group_var factor; column in \code{data}
+#' @param trim_mean trimmed mean
 #' @return \code{infer_levene_test} returns an object of class \code{"infer_levene_test"}.
 #' An object of class \code{"infer_levene_test"} is a list containing the
 #' following components:
@@ -37,122 +37,81 @@
 #' @references
 #' {Bland, M. 2000. An Introduction to Medical Statistics. 3rd ed. Oxford: Oxford University Press.}
 #'
-#' {Brown, M. B., and A. B. Forsythe. 1974. Robust tests for the equality of variances. Journal of the American Statistical
-#' Association 69: 364–367.}
+#' {Brown, M. B., and A. B. Forsythe. 1974. Robust tests for the equality of variances. Journal of the American Statistical Association 69: 364–367.}
 #'
-#' {Carroll, R. J., and H. Schneider. 1985. A note on Levene’s tests for equality of variances. Statistics and Probability
-#' Letters 3: 191–194.}
+#' {Carroll, R. J., and H. Schneider. 1985. A note on Levene’s tests for equality of variances. Statistics and Probability Letters 3: 191–194.}
 #' @examples
 #' # using grouping variable
-#' infer_levene_test(hsb$read, group_var = hsb$race)
+#' infer_levene_test(hsb, read, group_var = race)
 #'
-#' # using two variables
-#' infer_levene_test(hsb$read, hsb$write, hsb$socst)
-#'
-#' # using model
-#' m <- lm(read ~ female, data = hsb)
-#' infer_levene_test(m)
-#'
-#' # using formula
-#' infer_levene_test(as.formula(paste0('read ~ schtyp')), hsb)
+#' # using  variables
+#' infer_levene_test(hsb, read, write, socst)
 #'
 #' @export
 #'
-infer_levene_test <- function(variable, ...) UseMethod('infer_levene_test')
+infer_levene_test <- function(data, ...) UseMethod("infer_levene_test")
 
 #' @export
 #' @rdname infer_levene_test
-infer_levene_test.default <- function(variable, ..., group_var = NA,
-	trim.mean = 0.1) {
+infer_levene_test.default <- function(data, ..., group_var = NULL,
+                                      trim_mean = 0.1) {
+  groupvar <- enquo(group_var)
 
-	varname <- deparse(substitute(variable))
+  varyables <- quos(...)
 
-	suppressWarnings(
+  fdata <-
+    data %>%
+    select(!!! varyables)
 
-		if (is.na(group_var)) {
+  if (quo_is_null(groupvar)) {
+    z <- as.list(fdata)
+    ln <- z %>% map_int(length)
+    ly <- seq_len(length(z))
 
-			if (is.data.frame(variable)) {
-				z <- as.list(variable)
-			} else {
-				z <- list(variable, ...)
-			}
-
-			ln <- z %>% map_int(length)
-			ly <- seq_len(length(z))
-
-		  if (length(z) < 2) {
-    		stop('Please specify at least two variables.', call. = FALSE)
-    	}
-
-		        out <- gvar(ln, ly)
-		  variable  <- unlist(z)
-		  group_var <- unlist(out)
-
-		} else {
-
-    	if (length(variable) != length(group_var)) {
-    		stop('Length of variable and group_var do not match.', call. = FALSE)
-    	}
-
+    if (length(z) < 2) {
+      stop("Please specify at least two variables.", call. = FALSE)
     }
 
-	)
+    out <- gvar(ln, ly)
+    fdata <- unlist(z)
+    groupvars <-
+      out %>%
+      unlist() %>%
+      as.factor()
+  } else {
+    fdata <-
+      fdata %>%
+      pull(1)
 
-	if (!is.factor(group_var)) {
-		group_var <- as.factor(group_var)
-	}
-		 k <- lev_comp(variable, group_var, trim.mean)
-	# comp <- complete.cases(variable, group_var)
-	#    n <- length(comp)
- #     k <- nlevels(group_var)
-	# cvar <- variable[comp]
-	# gvar <- group_var[comp]
- #  lens <- tapply(cvar, gvar, length)
- #  avgs <- tapply(cvar, gvar, mean)
-	#  sds <- tapply(cvar, gvar, sd)
+    groupvars <-
+      data %>%
+      pull(!! groupvar)
 
-	#  bf <- lev_metric(cvar, gvar, mean)
-	# lev <- lev_metric(cvar, gvar, median)
-	# bft <- lev_metric(cvar, gvar, mean, trim = trim.mean)
+    if (length(fdata) != length(groupvars)) {
+      stop("Length of variable and group_var do not match.", call. = FALSE)
+    }
+  }
 
-	out <- list(bf    = k$bf, p_bf  = k$p_bf, lev = k$lev, p_lev = k$p_lev,
-              bft   = k$bft, p_bft = k$p_bft, avgs  = k$avgs, sds   = k$sds,
-              avg   = k$avg, sd = k$sd, n = k$n, levs  = k$levs, n_df  = k$n_df,
-              d_df  = k$d_df, lens  = k$lens)
+  k <- lev_comp(fdata, groupvars, trim_mean)
 
-	class(out) <- 'infer_levene_test'
+  out <- list(
+    bf = k$bf, p_bf = k$p_bf, lev = k$lev, p_lev = k$p_lev,
+    bft = k$bft, p_bft = k$p_bft, avgs = k$avgs, sds = k$sds,
+    avg = k$avg, sd = k$sd, n = k$n, levs = k$levs, n_df = k$n_df,
+    d_df = k$d_df, lens = k$lens
+  )
+
+  class(out) <- "infer_levene_test"
   return(out)
-
 }
 
 #' @export
 #' @rdname infer_levene_test
 #' @usage NULL
 #'
-levene_test <- function(variable, ..., group_var = NA,
+levene_test <- function(variable, ..., group_var = NULL,
                         trim.mean = 0.1) {
-
-    .Deprecated("infer_levene_test()")
-    infer_levene_test(variable, ..., group_var,
-                      trim.mean)
-
-}
-
-#' @export
-#' @rdname infer_levene_test
-#'
-infer_levene_test.lm <- function(variable, ...) {
-    infer_levene_test.formula(variable = formula(variable), data = model.frame(variable))
-}
-
-#' @export
-#' @rdname infer_levene_test
-#'
-infer_levene_test.formula <- function(variable, data, ...) {
-	dat       <- model.frame(variable, data)
-	variable  <- dat[, 1]
-	group_var <- dat[, 2]
-	infer_levene_test.default(variable = variable, group_var = group_var)
+  .Deprecated("infer_levene_test()")
 }
 
 #' @export

@@ -2,8 +2,9 @@
 #' @title Paired t test
 #' @description \code{infer_ts_paired_ttest} tests that two samples have the
 #' same mean, assuming paired data.
-#' @param x a numeric vector
-#' @param y a numeric vector
+#' @param data a \code{data.frame} or \code{tibble}
+#' @param x numeric; column in \code{data}
+#' @param y numeric; column in \code{data}
 #' @param confint confidence level
 #' @param alternative a character string specifying the alternative hypothesis, must be
 #' one of "both" (default), "greater", "less" or "all". You can specify just the
@@ -38,51 +39,54 @@
 #' @seealso \code{\link[stats]{t.test}}
 #' @examples
 #' # lower tail
-#' infer_ts_paired_ttest(hsb$read, hsb$write, alternative = 'less')
+#' infer_ts_paired_ttest(hsb, read, write, alternative = 'less')
 #'
 #' # upper tail
-#' infer_ts_paired_ttest(hsb$read, hsb$write, alternative = 'greater')
+#' infer_ts_paired_ttest(hsb, read, write, alternative = 'greater')
 #'
 #' # both tails
-#' infer_ts_paired_ttest(hsb$read, hsb$write, alternative = 'both')
+#' infer_ts_paired_ttest(hsb, read, write, alternative = 'both')
 #'
 #' # all tails
-#' infer_ts_paired_ttest(hsb$read, hsb$write, alternative = 'all')
+#' infer_ts_paired_ttest(hsb, read, write, alternative = 'all')
 #' @export
 #'
-infer_ts_paired_ttest <- function(x, y, confint = 0.95,
-  alternative = c('both', 'less', 'greater', 'all')) UseMethod('infer_ts_paired_ttest')
+infer_ts_paired_ttest <- function(data, x, y, confint = 0.95,
+                                  alternative = c("both", "less", "greater", "all")) UseMethod("infer_ts_paired_ttest")
 
 #' @export
 #'
-infer_ts_paired_ttest.default <- function(x, y, confint = 0.95,
-  alternative = c('both', 'less', 'greater', 'all')) {
+infer_ts_paired_ttest.default <- function(data, x, y, confint = 0.95,
+                                          alternative = c("both", "less", "greater", "all")) {
+  x1 <- enquo(x)
+  y1 <- enquo(y)
 
-  if (!is.numeric(x)) {
-    stop('x must be numeric')
-  }
+  method <- match.arg(alternative)
 
-  if (!is.numeric(y)) {
-    stop('y must be numeric')
-  }
+  var_names <-
+    data %>%
+    select(!! x1, !! y1) %>%
+    names()
 
-  if (!is.numeric(confint)) {
-    stop('confint must be numeric')
-  }
+  xone <-
+    data %>%
+    pull(!! x1)
 
-     method <- match.arg(alternative)
-      var_x <- l(deparse(substitute(x)))
-      var_y <- l(deparse(substitute(y)))
-  var_names <- c(var_x, var_y)
-          k <- paired_comp(x, y, confint, var_names)
+  yone <-
+    data %>%
+    pull(!! y1)
 
-  result <- list(Obs = k$Obs, b = k$b, conf_int1 = k$conf_int1,
+  k <- paired_comp(xone, yone, confint, var_names)
+
+  result <- list(
+    Obs = k$Obs, b = k$b, conf_int1 = k$conf_int1,
     conf_int2 = k$conf_int2, conf_int_diff = k$conf_int_diff, corr = k$corr,
     corsig = k$corsig, tstat = k$tstat, p_lower = k$p_lower,
     p_upper = k$p_upper, p_two_tail = k$p_two_tail, var_names = var_names,
-    xy = k$xy, df = k$df, alternative = method, confint = confint)
+    xy = k$xy, df = k$df, alternative = method, confint = confint
+  )
 
-  class(result) <- 'infer_ts_paired_ttest'
+  class(result) <- "infer_ts_paired_ttest"
   return(result)
 }
 
@@ -91,11 +95,9 @@ infer_ts_paired_ttest.default <- function(x, y, confint = 0.95,
 #' @usage NULL
 #'
 paired_ttest <- function(x, y, confint = 0.95,
-                         alternative = c('both', 'less', 'greater', 'all')) {
-
-    .Deprecated("infer_ts_paired_ttest()")
-    infer_ts_paired_ttest(x, y, confint, alternative)
-
+                         alternative = c("both", "less", "greater", "all")) {
+  .Deprecated("infer_ts_paired_ttest()")
+  infer_ts_paired_ttest(x, y, confint, alternative)
 }
 
 #' @export

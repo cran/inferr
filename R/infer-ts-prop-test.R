@@ -2,10 +2,11 @@
 #' @description Tests on the equality of proportions using
 #' large-sample statistics. It tests that a sample has the same proportion
 #' within two independent groups or two samples have the same proportion.
-#' @param var1 a categorical variable
-#' @param var2 a categorical variable
-#' @param var a categorical variable
-#' @param group a categorical variable
+#' @param data a \code{data.frame} or \code{tibble}
+#' @param var1 factor; column in \code{data}
+#' @param var2 factor; column in \code{data}
+#' @param var factor; column in \code{data}
+#' @param group factor; column in \code{data}
 #' @param n1 sample 1 size
 #' @param n2 sample 2 size
 #' @param p1 sample 1 proportion
@@ -35,69 +36,49 @@
 #' @examples
 #' # using variables
 #' # lower tail
-#' infer_ts_prop_test(var1 = treatment$treatment1, var2 = treatment$treatment2,
+#' infer_ts_prop_test(treatment, treatment1, treatment2,
 #' alternative = 'less')
-#'
-#' # upper tail
-#' infer_ts_prop_test(var1 = treatment$treatment1, var2 = treatment$treatment2,
-#' alternative = 'greater')
-#'
-#' # both tails
-#' infer_ts_prop_test(var1 = treatment$treatment1, var2 = treatment$treatment2,
-#' alternative = 'both')
-#'
-#' # all tails
-#' infer_ts_prop_test(var1 = treatment$treatment1, var2 = treatment$treatment2,
-#' alternative = 'all')
 #'
 #' # using groups
 #' # lower tail
-#' infer_ts_prop_grp(var = treatment2$outcome, group = treatment2$female,
+#' infer_ts_prop_grp(treatment2, outcome, female,
 #' alternative = 'less')
-#'
-#' # upper tail
-#' infer_ts_prop_grp(var = treatment2$outcome, group = treatment2$female,
-#' alternative = 'greater')
-#'
-#' # both tails
-#' infer_ts_prop_grp(var = treatment2$outcome, group = treatment2$female,
-#' alternative = 'both')
-#'
-#' # # all tails
-#' infer_ts_prop_grp(var = treatment2$outcome, group = treatment2$female,
-#' alternative = 'all')
 #'
 #' # using sample size and proportions
 #' # lower tail
 #' infer_ts_prop_calc(n1 = 30, n2 = 25, p1 = 0.3, p2 = 0.5, alternative = 'less')
 #'
-#' # upper tail
-#' infer_ts_prop_calc(n1 = 30, n2 = 25, p1 = 0.3, p2 = 0.5, alternative = 'greater')
-#'
-#' # both tails
-#' infer_ts_prop_calc(n1 = 30, n2 = 25, p1 = 0.3, p2 = 0.5, alternative = 'both')
-#'
-#' # all tails
-#' infer_ts_prop_calc(n1 = 30, n2 = 25, p1 = 0.3, p2 = 0.5, alternative = 'all')
 #' @export
 #'
-infer_ts_prop_test <- function(var1, var2,
-  alternative = c('both', 'less', 'greater', 'all'), ...) UseMethod('infer_ts_prop_test')
+infer_ts_prop_test <- function(data, var1, var2,
+                               alternative = c("both", "less", "greater", "all"), ...)
+  UseMethod("infer_ts_prop_test")
 
 #' @export
 #'
-infer_ts_prop_test.default <- function(var1, var2,
-  alternative = c('both', 'less', 'greater', 'all'), ...) {
+infer_ts_prop_test.default <- function(data, var1, var2,
+                                       alternative = c("both", "less", "greater", "all"), ...) {
+  var_1 <- enquo(var1)
+  var_2 <- enquo(var2)
+
+  varone <-
+    data %>%
+    pull(!! var_1)
+
+  vartwo <-
+    data %>%
+    pull(!! var_2)
 
   alt <- match.arg(alternative)
-    k <- prop_comp2(var1, var2, alt)
+  k <- prop_comp2(varone, vartwo, alt)
 
-  result <- list(n1 = k$n1, n2 = k$n2, phat1 = k$phat1, phat2 = k$phat2,
-    z = k$z, sig = k$sig, alt = alt)
+  result <- list(
+    n1 = k$n1, n2 = k$n2, phat1 = k$phat1, phat2 = k$phat2,
+    z = k$z, sig = k$sig, alt = alt
+  )
 
-  class(result) <- 'infer_ts_prop_test'
+  class(result) <- "infer_ts_prop_test"
   return(result)
-
 }
 
 #' @export
@@ -105,11 +86,8 @@ infer_ts_prop_test.default <- function(var1, var2,
 #' @usage NULL
 #'
 ts_prop_test <- function(var1, var2,
-                         alternative = c('both', 'less', 'greater', 'all'), ...) {
-
-    .Deprecated("infer_ts_prop_test()")
-    infer_ts_prop_test(var1, var2, alternative, ...)
-
+                         alternative = c("both", "less", "greater", "all"), ...) {
+  .Deprecated("infer_ts_prop_test()")
 }
 
 #' @export
@@ -122,58 +100,67 @@ print.infer_ts_prop_test <- function(x, ...) {
 #' @export
 #' @rdname infer_ts_prop_test
 #'
-infer_ts_prop_grp <- function(var, group,
-  alternative = c('both', 'less', 'greater', 'all')) {
+infer_ts_prop_grp <- function(data, var, group,
+                              alternative = c("both", "less", "greater", "all")) {
+  var1 <- enquo(var)
+  group1 <- enquo(group)
+
+  varone <-
+    data %>%
+    pull(!! var1)
+
+  groupone <-
+    data %>%
+    pull(!! group1)
+
+  if (nlevels(groupone) > 2) {
+    stop("Grouping variable must be a binary factor variables.", call. = FALSE)
+  }
+
+  n <- tapply(varone, groupone, length)
+  n1 <- n[[1]]
+  n2 <- n[[2]]
+  y <- tapply(varone, groupone, table)
+  y1 <- y[[1]][[2]]
+  y2 <- y[[2]][[2]]
+  phat1 <- y1 / n1
+  phat2 <- y2 / n2
+  phat <- sum(y1, y2) / sum(n1, n2)
+  num <- (phat1 - phat2)
+  den1 <- phat * (1 - phat)
+  den2 <- (1 / n1) + (1 / n2)
+  den <- sqrt(den1 * den2)
+  z <- num / den
 
 
-    if (nlevels(group) > 2) {
-      stop('Grouping variable must be a binary factor variables.', call. = FALSE)
-    }
+  lt <- pnorm(z)
+  ut <- round(pnorm(z, lower.tail = FALSE), 4)
+  tt <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 4)
 
-	    n <- tapply(var, group, length)
-	   n1 <- n[[1]]
-	   n2 <- n[[2]]
-	    y <- tapply(var, group, table)
-	   y1 <- y[[1]][[2]]
-	   y2 <- y[[2]][[2]]
-	phat1 <- y1 / n1
-	phat2 <- y2 / n2
-	 phat <- sum(y1, y2) / sum(n1, n2)
-	  num <- (phat1 - phat2)
-	 den1 <- phat * (1 - phat)
-	 den2 <- (1 / n1) + (1 / n2)
-	  den <- sqrt(den1 * den2)
-	    z <- num / den
+  alt <- match.arg(alternative)
 
+  if (alt == "all") {
+    sig <- c("both" = tt, "less" = lt, "greater" = ut)
+  } else if (alt == "greater") {
+    sig <- ut
+  } else if (alt == "less") {
+    sig <- lt
+  } else {
+    sig <- tt
+  }
 
-	lt <- pnorm(z)
-	ut <- round(pnorm(z, lower.tail = FALSE), 4)
-	tt <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 4)
+  out <- list(
+    n1 = n1,
+    n2 = n2,
+    phat1 = phat1,
+    phat2 = phat2,
+    z = round(z, 3),
+    sig = round(sig, 3),
+    alt = alt
+  )
 
-	alt <- match.arg(alternative)
-
-    if (alt == "all") {
-        sig = c('both' = tt, 'less' = lt, 'greater' = ut)
-    } else if (alt == "greater") {
-        sig = ut
-    } else if (alt == "less"){
-        sig = lt
-    } else {
-        sig = tt
-    }
-
-    out <- list(
-         n1 = n1,
-         n2 = n2,
-      phat1 = phat1,
-      phat2 = phat2,
-          z = round(z, 3),
-        sig = round(sig, 3),
-        alt = alt)
-
-    class(out) <- 'infer_ts_prop_test'
-    return(out)
-
+  class(out) <- "infer_ts_prop_test"
+  return(out)
 }
 
 #' @export
@@ -181,11 +168,8 @@ infer_ts_prop_grp <- function(var, group,
 #' @usage NULL
 #'
 ts_prop_grp <- function(var, group,
-                        alternative = c('both', 'less', 'greater', 'all')) {
-
-    .Deprecated("infer_ts_prop_grp()")
-    infer_ts_prop_grp(var, group, alternative)
-
+                        alternative = c("both", "less", "greater", "all")) {
+  .Deprecated("infer_ts_prop_grp()")
 }
 
 
@@ -193,47 +177,46 @@ ts_prop_grp <- function(var, group,
 #' @rdname infer_ts_prop_test
 #'
 infer_ts_prop_calc <- function(n1, n2, p1, p2,
-  alternative = c('both', 'less', 'greater', 'all'), ...) {
+                               alternative = c("both", "less", "greater", "all"), ...) {
+  n1 <- n1
+  n2 <- n2
+  phat1 <- p1
+  phat2 <- p2
+  phat <- sum(n1 * p1, n2 * p2) / sum(n1, n2)
+  num <- (phat1 - phat2)
+  den1 <- phat * (1 - phat)
+  den2 <- (1 / n1) + (1 / n2)
+  den <- sqrt(den1 * den2)
+  z <- num / den
 
-	   n1 <- n1
-	   n2 <- n2
-	phat1 <- p1
-	phat2 <- p2
-	 phat <- sum(n1 * p1, n2 * p2) / sum(n1, n2)
-	  num <- (phat1 - phat2)
-	 den1 <- phat * (1 - phat)
-	 den2 <- (1 / n1) + (1 / n2)
-	  den <- sqrt(den1 * den2)
-	    z <- num / den
+  lt <- pnorm(z)
+  ut <- round(pnorm(z, lower.tail = FALSE), 4)
+  tt <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 4)
 
-	lt <- pnorm(z)
-	ut <- round(pnorm(z, lower.tail = FALSE), 4)
-	tt <- round(pnorm(abs(z), lower.tail = FALSE) * 2, 4)
+  alt <- match.arg(alternative)
 
-	alt <- match.arg(alternative)
+  if (alt == "all") {
+    sig <- c("both" = tt, "less" = lt, "greater" = ut)
+  } else if (alt == "greater") {
+    sig <- ut
+  } else if (alt == "less") {
+    sig <- lt
+  } else {
+    sig <- tt
+  }
 
-    if (alt == "all") {
-        sig = c('both' = tt, 'less' = lt, 'greater' = ut)
-    } else if (alt == "greater") {
-        sig = ut
-    } else if (alt == "less"){
-        sig = lt
-    } else {
-        sig = tt
-    }
+  out <- list(
+    n1 = n1,
+    n2 = n2,
+    phat1 = round(phat1, 3),
+    phat2 = round(phat2, 3),
+    z = round(z, 3),
+    sig = round(sig, 3),
+    alt = alt
+  )
 
-    out <- list(
-         n1 = n1,
-         n2 = n2,
-      phat1 = round(phat1, 3),
-      phat2 = round(phat2, 3),
-          z = round(z, 3),
-        sig = round(sig, 3),
-        alt = alt)
-
-    class(out) <- 'infer_ts_prop_test'
-    return(out)
-
+  class(out) <- "infer_ts_prop_test"
+  return(out)
 }
 
 #' @export
@@ -241,9 +224,7 @@ infer_ts_prop_calc <- function(n1, n2, p1, p2,
 #' @usage NULL
 #'
 ts_prop_calc <- function(n1, n2, p1, p2,
-                         alternative = c('both', 'less', 'greater', 'all'), ...) {
-
-    .Deprecated("infer_ts_prop_calc()")
-    infer_ts_prop_calc(n1, n2, p1, p2, alternative, ...)
-
+                         alternative = c("both", "less", "greater", "all"), ...) {
+  .Deprecated("infer_ts_prop_calc()")
+  infer_ts_prop_calc(n1, n2, p1, p2, alternative, ...)
 }

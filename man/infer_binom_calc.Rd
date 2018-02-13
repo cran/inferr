@@ -9,7 +9,7 @@
 \usage{
 infer_binom_calc(n, success, prob = 0.5, ...)
 
-infer_binom_test(data, prob = 0.5)
+infer_binom_test(data, variable, prob = 0.5)
 }
 \arguments{
 \item{n}{number of observations}
@@ -20,7 +20,9 @@ infer_binom_test(data, prob = 0.5)
 
 \item{...}{additional arguments passed to or from other methods}
 
-\item{data}{binary/dichotomous factor}
+\item{data}{a \code{data.frame} or a \code{tibble}}
+
+\item{variable}{factor; column in \code{data}}
 }
 \value{
 \code{binom_test} returns an object of class \code{"binom_test"}.
@@ -32,10 +34,8 @@ following components:
 \item{exp_k}{expected number of successes}
 \item{obs_p}{assumed probability of success}
 \item{exp_p}{expected probability of success}
-\item{ik}{the largest number <= \code{exp_k} such that Pr(k = ik) <= Pr(k = kobs)}
 \item{lower}{lower one sided p value}
 \item{upper}{upper one sided p value}
-\item{two_tail}{two sided p value}
 }
 \description{
 Test whether the proportion of successes on a two-level
@@ -52,7 +52,7 @@ categorical dependent variable significantly differs from a hypothesized value.
 infer_binom_calc(32, 13, prob = 0.5)
 
 # using data set
-infer_binom_test(as.factor(hsb$female), prob = 0.5)
+infer_binom_test(hsb, female, prob = 0.5)
 }
 \references{
 Hoel, P. G. 1984. Introduction to Mathematical Statistics.

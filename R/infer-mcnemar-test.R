@@ -1,9 +1,11 @@
 #' @importFrom stats qnorm
+#' @importFrom magrittr %>%
 #' @title McNemar Test
 #' @description Test if the proportions of two dichotomous variables are
 #' equal in the same population.
-#' @param x 2 x 2 matrix or 2 x 2 table or numeric variable or factor variable
-#' @param y numeric or factor variable
+#' @param data a \code{data.frame} or \code{tibble}
+#' @param x factor; column in \code{data}
+#' @param y factor; column in \code{data}
 #' @return \code{infer_mcnemar_test} returns an object of class \code{"infer_mcnemar_test"}.
 #' An object of class \code{"infer_mcnemar_test"} is a list containing the
 #' following components:
@@ -31,6 +33,14 @@
 #'
 #' @seealso \code{\link[stats]{mcnemar.test}}
 #' @examples
+#' # using variables from data
+#' library(dplyr)
+#' hb <- mutate(hsb,
+#'         himath = if_else(math > 60, 1, 0),
+#'         hiread = if_else(read > 60, 1, 0)
+#'     )
+#' infer_mcnemar_test(hb, himath, hiread)
+#'
 #' # test if the proportion of students in himath and hiread group is same
 #' himath <- ifelse(hsb$math > 60, 1, 0)
 #' hiread <- ifelse(hsb$read > 60, 1, 0)
@@ -40,42 +50,35 @@
 #' infer_mcnemar_test(matrix(c(135, 18, 21, 26), nrow = 2))
 #' @export
 #'
-infer_mcnemar_test <- function(x, y = NULL) UseMethod('infer_mcnemar_test')
+infer_mcnemar_test <- function(data, x = NULL, y = NULL) UseMethod("infer_mcnemar_test")
 
 #' @export
 #'
-infer_mcnemar_test.default <- function(x, y = NULL) {
+infer_mcnemar_test.default <- function(data, x = NULL, y = NULL) {
+  if (is.matrix(data) | is.table(data)) {
+    dat <- mcdata(data)
+  } else {
+    x1 <- enquo(x)
+    y1 <- enquo(y)
 
-	if (is.null(y)) {
-
-		dat <- mcdata(x, y)
-
-	} else {
-
-		if (length(x) != length(y)) {
-			stop('x and y should be of the same length')
-		}
-
-		if ((!is.numeric(x) & !is.numeric(y)) &
-			 (!is.factor(x) & !is.factor(y))) {
-			 stop('x and y must be either numeric or factor')
-		}
-
-		dat <- table(x, y)
-
-	}
+    dat <-
+      data %>%
+      select(!! x1, !! y1) %>%
+      table()
+  }
 
   k <- mccomp(dat)
 
-	result <- list(statistic = k$statistic, df = k$df, pvalue = k$pvalue,
-		exactp = k$exactp, cstat = k$cstat, cpvalue = k$cpvalue, kappa = k$kappa,
+  result <- list(
+    statistic = k$statistic, df = k$df, pvalue = k$pvalue,
+    exactp = k$exactp, cstat = k$cstat, cpvalue = k$cpvalue, kappa = k$kappa,
     std_err = k$std_err, kappa_cil = k$kappa_cil, kappa_ciu = k$kappa_ciu,
     cases = k$cases, controls = k$controls, ratio = k$ratio,
-    odratio = k$odratio, tbl = dat)
+    odratio = k$odratio, tbl = dat
+  )
 
-	class(result) <- 'infer_mcnemar_test'
-	return(result)
-
+  class(result) <- "infer_mcnemar_test"
+  return(result)
 }
 
 #' @export
@@ -83,14 +86,11 @@ infer_mcnemar_test.default <- function(x, y = NULL) {
 #' @usage NULL
 #'
 mcnemar_test <- function(x, y = NULL) {
-
-    .Deprecated("infer_mcnemar_test()")
-    infer_mcnemar_test(x, y)
-
+  .Deprecated("infer_mcnemar_test()")
 }
 
 #' @export
 #'
 print.infer_mcnemar_test <- function(x, ...) {
-	print_mcnemar_test(x)
+  print_mcnemar_test(x)
 }
