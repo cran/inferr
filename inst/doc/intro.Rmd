@@ -10,7 +10,6 @@ vignette: >
 
 ```{r, echo=FALSE, message=FALSE}
 library(inferr)
-library(dplyr)
 ```
 
 Inferential statistics allows us to make generalizations about populations using data drawn from the population.
@@ -73,6 +72,7 @@ infer_ts_paired_ttest(hsb, read, write, alternative = 'all')
 ```
 
 ## Two Independent Sample t Test
+
 An independent samples t-test is used to compare the means of a normally distributed continuous dependent variable for two unrelated groups. The dependent variable must be approximately normally distributed and the cases/subjects in the two groups  must be 
 different i.e. a subject in one group cannot also be a subject of the other group. It can be used to answer whether:
 
@@ -127,7 +127,7 @@ Using the treatment2 data, test whether outcome has same proportion for male and
 
 ```{r ts_prop2}
 # Using Grouping Variable
-infer_ts_prop_grp(treatment2, outcome, female, alternative = 'all')
+infer_ts_prop_group(treatment2, outcome, female, alternative = 'all')
 ```
 
 #### Using Calculator
@@ -311,12 +311,9 @@ be used to answer whether:
 Using the hsb data, test if the proportion of students in himath and hiread group is equal.
 
 ```{r mc3}
-hb <-
-   hsb %>%
-     mutate(
-       himath = if_else(math > 60, 1, 0),
-       hiread = if_else(read > 60, 1, 0)
-     )
+hb <- hsb
+hb$himath <- ifelse(hsb$math > 60, 1, 0)
+hb$hiread <- ifelse(hsb$read > 60, 1, 0)
 infer_mcnemar_test(hb, himath, hiread)
 ```
 
@@ -357,10 +354,3 @@ infer_runs_test(hsb, read, mean = TRUE)
 # threshold to be used for counting runs
 infer_runs_test(hsb, read, threshold = 0)
 ```
-
-## Credits
-
-The examples and the data set used in the vignette are borrowed from the below listed sources:
-
-- What statistical analysis should I use?  UCLA: Statistical Consulting Group.
-from http://www.ats.ucla.edu/stat/mult_pkg/whatstat/

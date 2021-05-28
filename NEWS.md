@@ -1,3 +1,7 @@
+# inferr 0.3.0.1
+
+This is a patch release to fix error on R-devel on Debian and Fedora.
+
 # inferr 0.3.0
 
 This is a minor release for bug fixes and API changes. We have completely revamped the API. All the functions now take a `data.frame` or `tibble` as the first argument followed by the variable names. The variable names need not be surrounded by single/double quotes anymore. Please view the guide for more details.

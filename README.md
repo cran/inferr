@@ -1,52 +1,47 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-## inferr: Inferential statistics with R
+# inferr
 
-**Author:** [Aravind Hebbali](http://www.aravindhebbali.com)<br/>
-**License:**
-[MIT](https://opensource.org/licenses/MIT)
+> Tools for Statistical Inference
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/inferr)](https://cran.r-project.org/package=inferr)
-[![Travis-CI Build
-Status](https://travis-ci.org/rsquaredacademy/inferr.svg?branch=master)](https://travis-ci.org/rsquaredacademy/inferr)
-[![AppVeyor Build
-Status](https://ci.appveyor.com/api/projects/status/github/rsquaredacademy/inferr?branch=master&svg=true)](https://ci.appveyor.com/project/rsquaredacademy/inferr)
+<!-- badges: start -->
+
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/inferr)](https://cran.r-project.org/package=inferr)
+[![cran
+checks](https://cranchecks.info/badges/summary/inferr)](https://cran.r-project.org/web/checks/check_results_inferr.html)
+[![R build
+status](https://github.com/rsquaredacademy/inferr/workflows/R-CMD-check/badge.svg)](https://github.com/rsquaredacademy/inferr/actions)
+[![Coverage
+status](https://codecov.io/gh/rsquaredacademy/inferr/branch/master/graph/badge.svg)](https://codecov.io/github/rsquaredacademy/inferr?branch=master)
+[![status](https://tinyverse.netlify.com/badge/inferr)](https://CRAN.R-project.org/package=inferr)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![](https://cranlogs.r-pkg.org/badges/grand-total/inferr)](https://cran.r-project.org/package=inferr)
+<!-- badges: end -->
 
 ## Overview
 
-Inferential statistics allows us to make generalizations about
-populations using data drawn from the population. We use them when it is
-impractical or impossible to collect data about the whole population
-under study and instead, we have a sample that represents the population
-under study and using inferential statistics technique, we make
-generalizations about the population from the sample.
+inferr builds upon the statistical tests provided in **stats**, provides
+additional and flexible input options and more detailed and structured
+test results. As of version 0.3, **inferr** includes a select set of
+parametric and non-parametric statistical tests which are listed below:
 
-The **inferr** package:
-
-  - builds upon the statistical tests provided in **stats**  
-  - provides additional and flexible input options
-  - more detailed and structured test results
-
-As of version 0.1, **inferr** includes a select set of parametric and
-non-parametric statistical tests which are listed below:
-
-  - One Sample t Test
-  - Paired Sample t Test
-  - Independent Sample t Test
-  - One Sample Proportion Test
-  - Two Sample Proportion Test
-  - One Sample Variance Test
-  - Two Sample Variance Test
-  - Binomial Test
-  - ANOVA
-  - Chi Square Goodness of Fit Test
-  - Chi Square Independence Test
-  - Levene’s Test
-  - Cochran’s Q Test
-  - McNemar Test
-  - Runs Test for Randomness
+-   One Sample t Test
+-   Paired Sample t Test
+-   Independent Sample t Test
+-   One Sample Proportion Test
+-   Two Sample Proportion Test
+-   One Sample Variance Test
+-   Two Sample Variance Test
+-   Binomial Test
+-   ANOVA
+-   Chi Square Goodness of Fit Test
+-   Chi Square Independence Test
+-   Levene’s Test
+-   Cochran’s Q Test
+-   McNemar Test
+-   Runs Test for Randomness
 
 ## Installation
 
@@ -59,18 +54,14 @@ install.packages("inferr")
 devtools::install_github("rsquaredacademy/inferr")
 ```
 
-## Shiny App
+## Articles
 
-Use `infer_launch_shiny_app()` to explore the package using a shiny app.
-
-## Vignettes
-
-  - [Introduction to
-    inferr](http://www.rsquaredacademy.com/inferr/articles/index.html)
+-   [Introduction to
+    inferr](https://inferr.rsquaredacademy.com/articles/intro.html)
 
 ## Usage
 
-##### One Sample t Test
+#### One Sample t Test
 
 ``` r
 infer_os_t_test(hsb, write, mu = 50, type = 'all')
@@ -81,14 +72,19 @@ infer_os_t_test(hsb, write, mu = 50, type = 'all')
 #>   write      200    52.775     0.6702       9.4786       51.4537    54.0969   
 #> ---------------------------------------------------------------------------------
 #> 
-#>                                Ho: mean(write) ~=50                              
+#>                                   Two Tail Test                                  
+#>                                  ---------------                                  
 #> 
-#>         Ha: mean < 50              Ha: mean ~= 50               Ha: mean > 50        
-#>          t = 4.141                   t = 4.141                   t = 4.141         
-#>        P < t = 1.0000             P > |t| = 0.0001             P > t = 0.0000
+#>                                Ho: mean(write) ~=50                              
+#>                                Ha: mean(write) !=50                               
+#> --------------------------------------------------------------------------------
+#>  Variable      t      DF       Sig       Mean Diff.    [95% Conf. Interval] 
+#> --------------------------------------------------------------------------------
+#>   write      4.141    199    0.00005       2.775         1.4537     4.0969   
+#> --------------------------------------------------------------------------------
 ```
 
-##### ANOVA
+#### ANOVA
 
 ``` r
 infer_oneway_anova(hsb, write, prog)
@@ -97,7 +93,7 @@ infer_oneway_anova(hsb, write, prog)
 #>                    Sum of                                             
 #>                    Squares     DF     Mean Square      F        Sig.  
 #> ----------------------------------------------------------------------
-#> Between Groups    3175.698      2      1587.849      21.275    0.0000 
+#> Between Groups    3175.698      2      1587.849      21.275      0    
 #> Within Groups     14703.177    197      74.635                        
 #> Total             17878.875    199                                    
 #> ----------------------------------------------------------------------
@@ -115,7 +111,7 @@ infer_oneway_anova(hsb, write, prog)
 #> Root MSE      = 8.6392    Adj R-squared = 0.1693
 ```
 
-##### Chi Square Test of Independence
+#### Chi Square Test of Independence
 
 ``` r
 infer_chisq_assoc_test(hsb, female, schtyp)
@@ -133,7 +129,7 @@ infer_chisq_assoc_test(hsb, female, schtyp)
 #> ----------------------------------------------------
 ```
 
-##### Levene’s Test
+#### Levene’s Test
 
 ``` r
 infer_levene_test(hsb, read, group_var = race)
@@ -158,7 +154,7 @@ infer_levene_test(hsb, read, group_var = race)
 #> -------------------------------------------------------------------------
 ```
 
-##### Cochran’s Q Test
+#### Cochran’s Q Test
 
 ``` r
 infer_cochran_qtest(exam, exam1, exam2, exam3)
@@ -171,15 +167,12 @@ infer_cochran_qtest(exam, exam1, exam2, exam3)
 #> ----------------------
 ```
 
-##### McNemar Test
+#### McNemar Test
 
 ``` r
-hb <-
-   hsb %>%
-     mutate(
-       himath = if_else(math > 60, 1, 0),
-       hiread = if_else(read > 60, 1, 0)
-     )
+hb <- hsb
+hb$himath <- ifelse(hsb$math > 60, 1, 0)
+hb$hiread <- ifelse(hsb$read > 60, 1, 0)
 infer_mcnemar_test(hb, himath, hiread)
 #>            Controls 
 #> ---------------------------------
@@ -216,6 +209,9 @@ infer_mcnemar_test(hb, himath, hiread)
 #> ----------------------
 ```
 
-Please note that this project is released with a [Contributor Code of
-Conduct](CONDUCT.md). By participating in this project you agree to
-abide by its terms.
+## Getting Help
+
+If you encounter a bug, please file a minimal reproducible example using
+[reprex](https://reprex.tidyverse.org/index.html) on github. For
+questions and clarifications, use
+[StackOverflow](https://stackoverflow.com/).
